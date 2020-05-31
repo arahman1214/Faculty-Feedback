@@ -1,0 +1,184 @@
+<html>
+
+<head>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <script src="https://www.gstatic.com/firebasejs/6.3.4/firebase.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Gugi" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Gugi', cursive;
+      font-size: 22px;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: 'Gugi', cursive;
+    }
+
+    .input-container {
+      display: -ms-flexbox;
+      /* IE10 */
+      display: flex;
+      width: 100%;
+      margin-bottom: 15px;
+    }
+
+    .icon {
+      padding: 10px;
+      background: dodgerblue;
+      color: white;
+      min-width: 50px;
+      text-align: center;
+    }
+
+    .input-field {
+      width: 100%;
+      padding: 10px;
+      outline: none;
+    }
+
+    .input-field:focus {
+      border: 2px solid dodgerblue;
+    }
+
+    .btn {
+      background-color: dodgerblue;
+      color: white;
+      padding: 15px 20px;
+      border: none;
+      cursor: pointer;
+      width: 76%;
+      opacity: 0.9;
+    }
+
+    .btn:hover {
+      opacity: 1;
+    }
+
+    body {
+      background: url('stars2.gif') no-repeat center center fixed;
+      -webkit-background-size: cover;
+      -moz-background-size: cover;
+      background-size: cover;
+      -o-background-size: cover;
+      color: bisque
+    }
+  </style>
+  <script>
+    const config = {
+      apiKey: "AIzaSyBR2Z1uIz4aPN2v3iI2ku9QdugvlP7RGo8",
+      authDomain: "forms-579e4.firebaseapp.com",
+      databaseURL: "https://forms-579e4.firebaseio.com",
+      projectId: "forms-579e4",
+      storageBucket: "",
+      messagingSenderId: "401278116212",
+      appId: "1:401278116212:web:6c4a1d0afe5e62e6378c21",
+      measurementId: "G-V3MCG28F96"
+    };
+    firebase.initializeApp(config);
+    var database = firebase.database();
+    var ref = database.ref();
+    async function register() {
+      var email = document.getElementById("email").value;
+      var password = document.getElementById("password").value;
+      var phone = document.getElementById("phone").value;
+      var pas = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{7,})/;
+      ///^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})/;
+      var phoneno = /^\d{10}$/;
+      var reg;
+      //TODO: write a reg expression to validate ur roll no. after that uncomment below ones
+      if (email == "") {
+        alert("please enter email");
+        return;
+      }
+      // else if (reg.test(email) == false) {
+      //   alert("invalid email");
+      //   return;
+      // }
+
+      if (password == "") {
+        alert("please enter password");
+        return;
+      }
+      else if (pas.test(password) == false) {
+        alert("invalid password");
+        return;
+      }
+
+      if (phone == "") {
+        alert("please enter phoneno");
+        return;
+      }
+      else if (phoneno.test(phone) == false) {
+        alert("invalid phone");
+        return;
+      }
+      console.log("here ");
+      var email = document.getElementById('email').value + "@cvr.ac.in";
+      var password = document.getElementById('password').value;
+      var flag = "success";
+      var user = await firebase.auth().createUserWithEmailAndPassword(email, password).catch(function (error) {
+        var errorCode = error.code;
+        var errorMessage = error.message;
+        // ...
+        console.log(errorCode);
+        console.log(errorMessage);
+        flag = "fail";
+        alert("user already exists");
+      });
+      var userNow = firebase.auth().currentUser;
+      if (userNow) {
+        console.log("in here");
+        console.log("before : ", userNow);
+        // Updates the user attributes:
+        var username = document.getElementById('username').value;
+        var phone = document.getElementById('phone').value;
+        console.log(username, phone);
+        await userNow.updateProfile({
+
+          displayName: username,
+          phoneNumber: phone,
+
+        }).then(function () { 
+          console.log(userNow.displayName, userNow.phoneNo);
+        }, function (error) {
+          // An error happened.
+          console.log(error);
+        });
+      };
+      console.log("after : ", userNow);
+      if (flag === "success")
+        window.location.replace('./login.html');
+      else {
+        alert("something unexpected happened have some patience and register again")
+        window.location.replace('./registration.html');
+      }
+
+      console.log("unsuccessfull");
+    }
+
+  </script>
+</head>
+
+<body>
+
+  <p id="errors"></p>
+  <form id="login_form" style="max-width:500px;margin:auto" method="post">
+    <h2>Registration Form </h2>
+    <div class="input-container">
+      <i class="fa fa-envelope icon"></i>
+      <input type="name" id="email" size="50" placeholder="Email" required><br><br></div>
+    <div class="input-container">
+      <i class="fa fa-envelope icon"></i>
+      <input type="name" id="username" size="50" placeholder="username" required><br><br></div>
+    <div class="input-container">
+      <i class="fa fa-envelope icon"></i>
+      <input type="password" id="password" size="50" placeholder="Password" required><br><br></div>
+    <div class="input-container">
+      <i class="fa fa-envelope icon"></i>
+      <input type="text" id="phone" size="50" placeholder="Mobile" required><br><br></div>
+    <BUTTON type="button" class="btn" onclick="register()">Register</BUTTON>
+  </form>
+</body>
+
+</html>

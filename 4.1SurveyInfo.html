@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>4-1 CSE-C FEED BACK</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/6.3.4/firebase.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.bundle.min.js"></script>
+    <script>
+        var firebaseConfig = {
+            apiKey: "AIzaSyBR2Z1uIz4aPN2v3iI2ku9QdugvlP7RGo8",
+            authDomain: "forms-579e4.firebaseapp.com",
+            databaseURL: "https://forms-579e4.firebaseio.com",
+            projectId: "forms-579e4",
+            storageBucket: "",
+            messagingSenderId: "401278116212",
+            appId: "1:401278116212:web:6c4a1d0afe5e62e6378c21",
+            measurementId: "G-V3MCG28F96"
+        };
+        firebase.initializeApp(firebaseConfig);
+        firebase.auth().onAuthStateChanged(function (user) {
+            if (!user)
+                window.location.replace("/login.html");
+            else {
+                console.log(firebase.auth().currentUser.email);
+            }
+        });
+        $(document).ready(getSurveydata);
+        async function getSurveydata() {
+            ratingMap = new Map([
+                ["Excellent", 6], ["Very good", 5], ["Good", 4], ["Satisfactory", 3], ["Poor", 2], ["Very poor", 1]]);
+            qstnsmap = new Map([
+                [1, "Rate the course in genral"], [2, "What is your attendace in particular course?"], [3, "How is faculty's command over subject?"], [4, "Do faculty give real time examples while explaning?"], [5, "Was the syllabus covered on time?"]
+            ]);
+            subMap = new Map([
+                [1, "DWDM"], [2, "LP"], [3, "IOT"], [4, "PE3"], [5, "ACD"]
+            ]);
+            var username;
+
+            await firebase.auth().onAuthStateChanged(function (user) {
+                if (!user)
+                    window.location.replace("/login.html");
+                else {
+                    var useremail = firebase.auth().currentUser.email;
+                    username = useremail.split("@")[0];
+
+                    console.log(username);
+
+                }
+            });
+            // console.log("finaly user is "+userEmail+firebase.auth().currentUser.email);
+            surveyData = {
+            };
+            count = 1;
+            var databaseRef = firebase.database().ref("4-1_CSE-CFEEDBACK");
+            await databaseRef.on("value", function (snapshot) {
+                snapshot.forEach(function (childSnapshot) {
+                    var data = childSnapshot.val();
+                    console.log("child data", data);
+                    if (count == 1) {
+                        for (var i = 1; i <= 5; i++) {
+                            surveyData[subMap.get(i)] = {};
+                            for (var j = 1; j <= 5; j++) {
+                                surveyData[subMap.get(i)][qstnsmap.get(j)] = ratingMap.get(data[subMap.get(i)][qstnsmap.get(j)]);
+                            }
+                        }
+                        console.log("after updating :" + JSON.stringify(surveyData));
+                    }
+                    else {
+                        console.log(JSON.stringify(surveyData));
+                        for (var i = 1; i <= 5; i++) {
+                            for (var j = 1; j <= 5; j++) {
+                                surveyData[subMap.get(i)][qstnsmap.get(j)] += ratingMap.get(data[subMap.get(i)][qstnsmap.get(j)]);
+                                surveyData[subMap.get(i)][qstnsmap.get(j)] = surveyData[subMap.get(i)][qstnsmap.get(j)] ;
+                            }
+                        }
+                    }
+                    count++;
+                });
+                console.log("final " + JSON.stringify(surveyData));
+            });
+        }
+        async function display(sub) {
+            console.log("surve y data is ", surveyData);
+            document.getElementById("heading").innerHTML = "Survey Info of " + sub;
+            var data = {};
+            switch (sub) {
+                case 'DWDM':
+                    data = surveyData['DWDM'];
+                    break;
+                case 'LP':
+                    data = surveyData['LP'];
+                    break;
+                case 'IOT':
+                    data = surveyData['IOT'];
+                    break;
+                case 'PE3':
+                    data = surveyData['PE3'];
+                    break;
+                case 'ACD':
+                    data = surveyData['ACD'];
+            }
+            array = [];
+            for (i = 1; i <= 5; i++) {
+                array.push(data[qstnsmap.get(i)]/count);
+            }
+            console.log(subMap.values())
+            console.log(data);
+            var ctx = document.getElementById("myChart").getContext('2d');
+            var myChart = await new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: Array.from(qstnsmap.values()),
+                    datasets: [{
+                        label: 'rating ',
+                        data: array,
+                        backgroundColor: [
+                            'rgba(255, 1, 9, 0.5)',
+
+                        ],
+                        borderColor: [
+                            'rgba(255,255,255,255)',
+
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: true
+                            }
+                        }]
+                    }
+                }
+            });
+        }
+    </script>
+    <style>
+        body {
+            background: url('s5.jpg') no-repeat center center fixed;
+            -webkit-background-size: cover;
+            -moz-background-size: cover;
+            background-size: cover;
+            -o-background-size: cover;
+            color: brown
+        }
+
+        button {
+            align-content: center;
+            margin: 5px;
+            padding: 5px;
+        }
+    </style>
+
+</head>
+
+<body style="background-color:black;color: black;align-content: center;width: 100%;height: 2000px;">
+    <center>
+        <header>
+            <H1>SURVEY INFO</H1>
+        </header>
+        <button type="button" onclick="display('DWDM')">DWDM</button>
+        <button type="button" onclick="display('LP')">LP</button>
+        <button type="button" onclick="display('IOT')">IOT</button>
+        <button type="button" onclick="display('PE3')">PE3</button>
+        <button type="button" onclick="display('ACD')">ACD</button>
+        <div style="width:900px;height:900px" id="chartDiv">
+            <h1 id="heading" style="color: goldenrod;">Survey Info of </h1>
+            <canvas id="myChart"></canvas>
+    </center>
+</body>
+
+</html>
